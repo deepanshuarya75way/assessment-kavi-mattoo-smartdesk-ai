@@ -63,6 +63,39 @@ export function createApp({ store, config, fetchImpl = globalThis.fetch, logger 
     wrap(async (req, res) => {
       const { value, details } = validateCreate(req.body);
       if (!value) return badRequest(res, details);
+      const normalize = (text)=>
+        String (text ?? "").trim().toLowerCase().replace(/\s+/g," ");
+      if (req.query.allowDuplicate !=="true"){
+        const tickets = await store.list({});
+        console.log("ticket loaded for duplicate check ")
+        const duplicate = tickets.find((ticket) =>
+          ticket.status!== "Resolved " && 
+        normalize(ticket.email)=== normalize(value.email) &&
+        normalize(tickets.subject)=== normalize(value.subject)
+        );
+        if (duplicate){
+
+
+          return res.status(409).json({
+            error:" a duplicate error ",
+            duplicatedId:duplicate.id,
+            subject:duplicate.subject,
+            status : duplicate.status
+
+
+
+
+          });
+
+        }
+ 
+
+
+
+      }
+
+
+
       res.status(201).json(await store.create(value));
     }),
   );

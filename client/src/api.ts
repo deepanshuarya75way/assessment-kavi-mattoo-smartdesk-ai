@@ -64,7 +64,7 @@ export function listTickets(filters: TicketFilters, signal?: AbortSignal) {
 }
 
 export const getTicket = (id: string, signal?: AbortSignal) => request<Ticket>(`/tickets/${enc(id)}`, { signal });
-export const createTicket = (data: NewTicket) =>
+export const createTicket = (data: NewTicketz) =>
   request<Ticket>("/tickets", { method: "POST", body: JSON.stringify(data) });
 export const updateTicket = (id: string, patch: TicketPatch) =>
   request<Ticket>(`/tickets/${enc(id)}`, { method: "PATCH", body: JSON.stringify(patch) });
