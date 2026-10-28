@@ -82,13 +82,11 @@ export function createApp({ store, config, fetchImpl = globalThis.fetch, logger 
       ));
        
 
-      const duplicate = tickets.find((ticket) =>
-        ticket.status !== "Resolved" && 
-        normalize(ticket.email)=== normalize(value.email) &&
-        normalize(ticket.subject)=== normalize(value.subject)
-        );
-
-       
+      const duplicate = tickets.some(ticket=>
+        ticket.email?.trim().toLowerCase()===value.email?.trim().toLowerCase() &&
+        ticket.subject?.trim().toLowerCase()===value.subject?.trim().toLowerCase() && ticket.status !=="Resolved"
+        
+      );
       if(duplicate){
 
 
