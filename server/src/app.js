@@ -4,6 +4,7 @@ import cors from "cors";
 import express from "express";
 import { generateReply } from "./replies.js";
 import { firstError, validateCreate, validateListQuery, validatePatch } from "./validation.js";
+import { json } from "node:stream/consumers";
 
 const wrap = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
@@ -60,20 +61,35 @@ export function createApp({ store, config, fetchImpl = globalThis.fetch, logger 
 
   app.post(
     "/api/tickets",
-    wrap(async (req, res) => {
+    wrap(async (req, res) => { console.log(" it is running ")
       const { value, details } = validateCreate(req.body);
-      if (!value) return badRequest(res, details);
+      if (!value){ return badRequest(res, details);}
+     
       const normalize = (text)=>
         String (text ?? "").trim().toLowerCase().replace(/\s+/g," ");
-      if (req.query.allowDuplicate !=="true"){
-        const tickets = await store.list({});
-        console.log("ticket loaded for duplicate check ")
-        const duplicate = tickets.find((ticket) =>
-          ticket.status!== "Resolved " && 
+       const tickets = await store.list({});
+       console.log("new:",value.email, "|", value.subject);
+      console.log("saved" , JSON.stringify(
+        tickets.map(t=>({
+          email:t.email,
+          subject:t.subject,
+          status:t.status
+
+
+        }))
+
+
+      ));
+       
+
+      const duplicate = tickets.find((ticket) =>
+        ticket.status !== "Resolved" && 
         normalize(ticket.email)=== normalize(value.email) &&
-        normalize(tickets.subject)=== normalize(value.subject)
+        normalize(ticket.subject)=== normalize(value.subject)
         );
-        if (duplicate){
+
+       
+      if(duplicate){
 
 
           return res.status(409).json({
@@ -81,22 +97,14 @@ export function createApp({ store, config, fetchImpl = globalThis.fetch, logger 
             duplicatedId:duplicate.id,
             subject:duplicate.subject,
             status : duplicate.status
-
-
-
-
           });
-
-        }
- 
-
-
-
+S
       }
-
-
+      
+     
 
       res.status(201).json(await store.create(value));
+      
     }),
   );
 
